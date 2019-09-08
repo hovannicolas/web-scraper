@@ -1,9 +1,17 @@
 import requests
 from bs4 import BeautifulSoup
-from csv import writer
+from csv import DictWriter, DictReader
 from random import choice
+import os.path
+from os import path
 
 BASE_URL = "http://quotes.toscrape.com"
+
+
+def read_quotes(filename):
+    with open(filename, "r") as file:
+        csv_reader = DictReader(file)
+        return list(csv_reader)
 
 
 # web-scraping logic
@@ -64,5 +72,22 @@ def start_game(quotes):
         print("See ya later! Thanks for playing.")
 
 
-quotes = scrape_quotes()
-start_game(quotes)
+# write quotes to CSV file
+def write_quotes(quotes):
+    with open("quotes.csv", "w") as file:
+        headers = ["text", "author", "bio-href"]
+        csv_writer = DictWriter(file, fieldnames=headers)
+        csv_writer.writeheader()
+        for quote in quotes:
+            csv_writer.writerow(quote)
+
+
+if path.exists("quotes.csv"):
+    print("Previous file found! Reading from quotes.csv..")
+    quotes = read_quotes("quotes.csv")
+    start_game(quotes)
+else:
+    print("No previous file found. Scraping quotes and writing quotes.csv..")
+    quotes = scrape_quotes()
+    start_game(quotes)
+    write_quotes(quotes)
